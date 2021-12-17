@@ -1,0 +1,29 @@
+import Users from "../models/usersModel.js";
+import jwt from "jsonwebtoken";
+
+export const resfreshToken = async(req, res) => {
+    try{
+        console.log(req.cookies.refreshToken);
+        const refresh_token = req.cookies.refreshToken;
+        if(!refresh_token) return res.sendStatus(401);
+        const users = await Users.findAll({
+            where:{
+                refresh_token: refresh_token
+            }
+        });
+        if(!users[0]) return res.sendStatus(403);
+        jwt.verify(refresh_token, process.env.REFRESH_TOKEN_SECRET,(err,decode) => {
+            if(err) return res.sendStatus(403);
+            const userId        = users[0].id;
+            const name          = users[0].name;
+            const email         = users[0].email;
+            const access_token  = jwt.sign({userId,name,email},process.env.ACCESS_TOKEN_SECRET,{
+                expiresIn : '60s'
+            });
+            res.json({access_token})
+        })
+    }
+    catch(error){
+        console.log(error)
+    }
+}

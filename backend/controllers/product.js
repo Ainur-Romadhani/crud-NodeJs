@@ -1,9 +1,14 @@
 import Product from "../models/productMOdel.js";
+import { QueryTypes } from "sequelize";
 
 export const getAllProducts = async (req , res) => {
 
     try{
-        const products = await Product.findAll();
+        // const products = await Product.findAll(); // Menggunakan ORM
+        const products = await Product.sequelize.query('SELECT * FROM products', //Menggunakan Query 
+        {
+              type: QueryTypes.SELECT
+        })
         res.json(products);
     }catch(error){
         res.json({message: error.message});
@@ -19,7 +24,15 @@ export const getAllProductsById = async (req , res) => {
                 id:req.params.id
             }
         });
-        res.json(products[0]);
+        if(products[0] == null){
+            res.json({
+                "message" : "product not found"
+            })
+        }
+        else{
+
+            res.json(products[0]);
+        }
     }catch(error){
         res.json({message: error.message});
     }
