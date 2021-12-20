@@ -1,6 +1,7 @@
 import Users from "../models/usersModel.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import {body, validationResult } from "express-validator";
 
 export const getUsers = async(req,res) =>{
     try{
@@ -15,6 +16,10 @@ export const getUsers = async(req,res) =>{
 }
 
 export const registerUser = async(req,res) =>{
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array()[0].msg });
+    }
     const {name,email,password,confPassword} = req.body;
     if(password !== confPassword) return res.status(400).json({
         "messages" : "Password dan Confirm Password harus sama !"
@@ -39,26 +44,12 @@ export const registerUser = async(req,res) =>{
     }
 }
 
-export const logoutUser = async(req,res) =>{
-    // res.sendStatus(200);
-    try{
-        // await Users.update({
-        //     refresh_token: ""
-        // });
-        res.json({
-            "messages" : "Logout successfully!"
-        });
-    }
-    catch(error)
-    {
-        res.sendStatus(401).json({
-            "messages" : error
-        });
-    }
-}
-
-
 export const loginUser = async(req,res) =>{
+
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array()[0].msg });
+    }
 
     try{
         const user = await Users.findAll({
@@ -76,7 +67,7 @@ export const loginUser = async(req,res) =>{
         const name          = user[0].name;
         const email         = user[0].email;
         const access_token  = jwt.sign({userId,name,email},process.env.ACCESS_TOKEN_SECRET,{
-            expiresIn : '60s'
+            expiresIn : '20s'
         });
 
         const refresh_token  = jwt.sign({userId,name,email},process.env.REFRESH_TOKEN_SECRET,{
@@ -99,5 +90,31 @@ export const loginUser = async(req,res) =>{
         res.status(404).json({
             "messages": "Email not registered!"
         })
+    }
+}
+
+export const logoutUser = async(req,res) => {
+
+    try{
+        console.log(req.cookies.refreshToken);
+        const refresh_token = req.cookies.refreshToken;
+        if(!refresh_token) return res.sendStatus(204);
+        const users = await Users.findAll({
+            where:{
+                refresh_token: refresh_token
+            }
+        });
+        if(!users[0]) return res.sendStatus(204);
+        const userId = users[0].id;
+        await Users.update({refresh_token:null},{
+            where:{
+                id:userId
+            }
+        });
+        res.clearCookie('refreshToken');
+        return res.sendStatus(200)
+    }
+    catch(e){
+
     }
 }
