@@ -28,7 +28,7 @@ const ListProduct = () => {
             confirmButtonText: 'Yes, delete it!'
           }).then((result) => {
             if (result.isConfirmed) {
-            //  axios.delete(`http://localhost:5000/products/${id}`);
+             axios.delete(`http://localhost:5000/products/${id}`);
               Swal.fire(
                 'Deleted!',
                 'Your file has been deleted.',
