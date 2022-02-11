@@ -11,6 +11,7 @@ import { getUsers,registerUser,loginUser,logoutUser} from "../controllers/auth.j
 import { verifyToken } from "../middleware/verifyToken.js";
 import { resfreshToken } from "../controllers/refreshToken.js";
 import { registerSchema,loginSchema } from "../rules/usersValidator.js";
+import { productSchema } from "../rules/productValidator.js"; 
 
 const router = Express.Router();
 
@@ -22,7 +23,7 @@ router.delete('/logout', logoutUser);
 
 
 router.get('/products', getAllProducts);
-router.post('/products', createProduct);
+router.post('/products',productSchema, createProduct);
 router.get('/products/:id', getAllProductsById);
 router.put('/products/:id', updateProduct);
 router.delete('/products/:id', deleteProduct)
