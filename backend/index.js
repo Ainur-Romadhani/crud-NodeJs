@@ -3,8 +3,7 @@ import db from "./config/database.js";
 import router from "./routes/index.js";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
-// import expressValidator from "express-validator";
-import Users from "./models/usersModel.js";
+import cors from "cors";
 
 
 // var cookieParser = require('cookie-parser')
@@ -20,7 +19,7 @@ try{
 }
 
 app.use(cookieParser());
-// app.use(expressValidator());
+app.use(cors());
 app.use(Express.json());
 app.use('/', router);
 
