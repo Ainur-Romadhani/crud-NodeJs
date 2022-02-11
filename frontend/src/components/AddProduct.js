@@ -2,7 +2,7 @@ import React from 'react'
 import { useState } from 'react';
 import axios from 'axios';
 import { useHistory, Link } from 'react-router-dom';
-
+import Swal from 'sweetalert2'
 const AddProduct = () => {
 
     const [nama,setNama]    = useState('');
@@ -15,7 +15,15 @@ const AddProduct = () => {
             nama: nama,
             harga: harga
         });
-        history.push('/')
+        Swal.fire({
+            title: 'Data created successfully',
+            icon: 'success',
+            confirmButtonColor: '#3085d6',
+          }).then((result) => {
+            if (result.isConfirmed) {
+                history.push('/')
+            }
+          })
     }
 
   return (

@@ -2,21 +2,30 @@ import React from 'react'
 import { useState ,useEffect} from 'react';
 import axios from 'axios';
 import { useHistory, Link, useParams } from 'react-router-dom';
+import Swal from 'sweetalert2'
 
 const EditProduct = () => {
 
     const [nama,setNama]    = useState('');
     const [harga,setHarga]  = useState('');
     const history           = useHistory();
-    const {id}             = useParams();
+    const {id}              = useParams();
 
     const saveProduct = async (e) => {
         e.preventDefault();
-        const res = await axios.put(`http://localhost:5000/products/${id}`,{
+        await axios.put(`http://localhost:5000/products/${id}`,{
             nama: nama,
             harga: harga
         });
-        history.push('/')
+        Swal.fire({
+            title: 'Data updated successfully',
+            icon: 'success',
+            confirmButtonColor: '#3085d6',
+          }).then((result) => {
+            if (result.isConfirmed) {
+                history.push('/')
+            }
+          })
     }
 
     useEffect(() => {

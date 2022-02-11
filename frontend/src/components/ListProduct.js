@@ -1,6 +1,10 @@
 import {useEffect , useState} from 'react'
 import axios from 'axios';
 import { Link } from 'react-router-dom';
+import "datatables.net-dt/js/dataTables.dataTables"
+import "datatables.net-dt/css/jquery.dataTables.min.css"
+import $ from 'jquery'; 
+import Swal from 'sweetalert2'
 const ListProduct = () => {
 
     const [products,setProduct] = useState([]);
@@ -14,13 +18,31 @@ const ListProduct = () => {
         setProduct(res.data);
     }
     const deleteProduct = async (id) => {
-        const res = await axios.delete(`http://localhost:5000/products/${id}`);
-        getProducts();
+       await Swal.fire({
+            title: 'Are you sure?',
+            text: "You won't be able to revert this!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, delete it!'
+          }).then((result) => {
+            if (result.isConfirmed) {
+            //  axios.delete(`http://localhost:5000/products/${id}`);
+              Swal.fire(
+                'Deleted!',
+                'Your file has been deleted.',
+                'success'
+              )
+            }
+          })
+        
+       await getProducts();
     }
     return (
         <div>
             <Link to="/addProduct" className="button is-primary mt-2">Tambah Product</Link>
-            <table className="table table-striped is-fullwidth">
+            <table id="example" className="table table-striped is-fullwidth">
                 <thead>
                     <tr>
                         <th>No</th>
