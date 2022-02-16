@@ -2,6 +2,7 @@ import Users from "../models/usersModel.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import {body, validationResult } from "express-validator";
+import localStorage from 'localStorage'
 
 export const getUsers = async(req,res) =>{
     try{
@@ -22,7 +23,7 @@ export const registerUser = async(req,res) =>{
     }
     const {name,email,password,confPassword} = req.body;
     if(password !== confPassword) return res.status(400).json({
-        "messages" : "Password dan Confirm Password harus sama !"
+        "errors" : "Password dan Confirm Password harus sama !"
     })
     const salt          = await bcrypt.genSalt(); //hash password
     const hashPassword  = await bcrypt.hash(password,salt) //hash password
@@ -39,7 +40,7 @@ export const registerUser = async(req,res) =>{
     catch(error)
     {
         res.json({
-            "messages" : error
+            "errors" : error
         });
     }
 }
@@ -60,7 +61,7 @@ export const loginUser = async(req,res) =>{
 
         const match = await bcrypt.compare(req.body.password, user[0].password);
         if(!match) return res.status(400).json({
-            "messages" : "Wrong Password!"
+            "errors" : "Wrong Password!"
         });
 
         const userId        = user[0].id;
@@ -78,17 +79,19 @@ export const loginUser = async(req,res) =>{
                 id: userId
             }
         });
-        res.cookie('refreshToken',refresh_token,{
-            httpOnly:true,
-            maxAge: 24 * 60 * 60 * 1000,
-            secure:true 
-        })
-        console.log(req.cookies.refreshToken);
+        localStorage.setItem('token',refresh_token);
+        console.log(localStorage.getItem('token'));
+        // res.cookie('refreshToken',refresh_token,{
+        //     httpOnly:true,
+        //     maxAge: 24 * 60 * 60 * 1000,
+        //     secure:true 
+        // })
+        // console.log(req.cookies.refreshToken);
         res.json({access_token});
     }
     catch(error){
         res.status(404).json({
-            "messages": "Email not registered!"
+            "errors": "Email not registered!"
         })
     }
 }
@@ -97,7 +100,7 @@ export const logoutUser = async(req,res) => {
 
     try{
         console.log(req.cookies.refreshToken);
-        const refresh_token = req.cookies.refreshToken;
+        const refresh_token = localStorage.getItem('token');
         if(!refresh_token) return res.sendStatus(204);
         const users = await Users.findAll({
             where:{
@@ -111,7 +114,9 @@ export const logoutUser = async(req,res) => {
                 id:userId
             }
         });
-        res.clearCookie('refreshToken');
+        // res.clearCookie('refreshToken');
+        localStorage.removeItem('token');
+        console.log(localStorage.getItem('token'));
         return res.sendStatus(200)
     }
     catch(e){

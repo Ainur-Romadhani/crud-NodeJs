@@ -1,6 +1,14 @@
 import React from 'react'
+import api from '../api';
+import { useHistory } from 'react-router-dom';
 
 const Navbar = () => {
+    const history = useHistory();
+
+    const logout = async()=> {
+        const res = await api.delete('/logout');
+        history.push('/login');
+    }
     return (
         <nav className="navbar" role="navigation" aria-label="main navigation">
             <div className="navbar-brand">
@@ -48,18 +56,15 @@ const Navbar = () => {
                     </div> */}
                 </div>
 
-                {/* <div className="navbar-end">
+                <div className="navbar-end">
                     <div className="navbar-item">
                         <div className="buttons">
-                            <a className="button is-primary">
-                                <strong>Sign up</strong>
-                            </a>
-                            <a className="button is-light">
-                                Log in
-                            </a>
+                            <button onClick={logout} className="button is-primary">
+                                <strong>Logout</strong>
+                            </button>
                         </div>
                     </div>
-                </div> */}
+                </div>
             </div>
         </nav>
     )

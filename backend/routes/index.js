@@ -22,7 +22,7 @@ router.get('/token',resfreshToken);
 router.delete('/logout', logoutUser);
 
 
-router.get('/products', getAllProducts);
+router.get('/products',verifyToken, getAllProducts);
 router.post('/products',productSchema, createProduct);
 router.get('/products/:id', getAllProductsById);
 router.put('/products/:id', updateProduct);

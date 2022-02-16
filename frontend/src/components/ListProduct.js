@@ -1,20 +1,63 @@
 import {useEffect , useState} from 'react'
-import axios from 'axios';
-import { Link } from 'react-router-dom';
+import { useHistory, Link } from 'react-router-dom';
 import "datatables.net-dt/js/dataTables.dataTables"
 import "datatables.net-dt/css/jquery.dataTables.min.css"
 import $ from 'jquery'; 
 import Swal from 'sweetalert2'
+import api from '../api';
+import jwt_decode from 'jwt-decode'
+import axios from 'axios';
 const ListProduct = () => {
 
     const [products,setProduct] = useState([]);
+    const [name, setName] = useState([]);
+    const [token,setToken] = useState([]);
+    const [expired, setExpired] = useState([]);
+    const history = useHistory();
 
-    useEffect(() =>{
+    useEffect(() => { 
+        refreshToken() 
         getProducts()
     },[])
 
+    const refreshToken = async () => {
+        try{
+            const response = await api.get('/token');
+            setToken(response.data.access_token);
+            const decode = jwt_decode(response.data.access_token);
+            setName(decode.name);
+            setExpired(decode.exp);
+            console.log(response.data.access_token);
+        }
+        catch(err){
+            history.push('/login')
+        }
+       
+    }
+
+    const axiosJWT = axios.create();
+
+    axiosJWT.interceptors.request.use(async(config)=>{
+        const currentDate = new Date();
+        if(expired * 1000 < currentDate.getTime()){
+            const result = await api.get('/token');
+            config.headers.Authorization = `Bearer ${result.data.access_token}`;
+            setToken(result.data.access_token)
+            const decode = jwt_decode(result.data.access_token);
+            setName(decode.name);
+            setExpired(decode.exp);
+        }
+        return config;
+    },(error)=>{
+        return Promise.reject(error)
+    })
+    
     const getProducts = async () => {
-        const res = await axios.get('http://localhost:5000/products/');
+        const res = await axiosJWT.get('http://localhost:5000/products',{
+            headers: {
+                Authorization: `Bearer ${token}`,
+            }
+        });
         setProduct(res.data);
     }
     const deleteProduct = async (id) => {
@@ -28,7 +71,7 @@ const ListProduct = () => {
             confirmButtonText: 'Yes, delete it!'
           }).then((result) => {
             if (result.isConfirmed) {
-             axios.delete(`http://localhost:5000/products/${id}`);
+             api.delete(`/products/${id}`);
               Swal.fire(
                 'Deleted!',
                 'Your file has been deleted.',
@@ -41,6 +84,7 @@ const ListProduct = () => {
     }
     return (
         <div>
+            <h1>Selamat Datang <b>{name}</b></h1>
             <Link to="/addProduct" className="button is-primary mt-2">Tambah Product</Link>
             <table id="example" className="table table-striped is-fullwidth">
                 <thead>

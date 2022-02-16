@@ -1,10 +1,12 @@
 import Users from "../models/usersModel.js";
 import jwt from "jsonwebtoken";
+import localStorage from 'localStorage'
 
 export const resfreshToken = async(req, res) => {
     try{
         console.log(req.cookies.refreshToken);
-        const refresh_token = req.cookies.refreshToken;
+        // const refresh_token = req.cookies.refreshToken; 
+        const refresh_token =localStorage.getItem('token');
         if(!refresh_token) return res.sendStatus(401);
         const users = await Users.findAll({
             where:{
